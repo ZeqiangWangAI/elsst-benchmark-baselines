@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elsst-baselines"
+version = "0.1.0"
+description = "Qwen retrieval and ORPO baselines for the ELSST benchmark."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "accelerate>=1.1.0",
+  "bert-score>=0.3.13",
+  "bitsandbytes>=0.45.0; platform_system == 'Linux'",
+  "datasets>=3.0.0",
+  "numpy>=1.24.0",
+  "peft>=0.14.0",
+  "scipy>=1.10.0",
+  "sentence-transformers>=3.2.0",
+  "torch>=2.4.0",
+  "transformers @ git+https://github.com/huggingface/transformers.git@main",
+  "trl @ git+https://github.com/huggingface/trl.git@main",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

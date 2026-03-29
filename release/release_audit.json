@@ -1,0 +1,156 @@
+{
+  "correctness": {
+    "source_val_ids_unique": true,
+    "track1": {
+      "counts": {
+        "train": 2985,
+        "val": 756,
+        "test_input": 1911
+      },
+      "split_ids_unique": {
+        "train": true,
+        "val": true,
+        "test": true
+      },
+      "cross_split_ids_unique": true,
+      "test_schema": [
+        "document_type",
+        "id",
+        "text"
+      ],
+      "val_query_index_size": 756
+    },
+    "track2": {
+      "counts": {
+        "train": 2985,
+        "val": 756,
+        "test_input": 1911,
+        "reject_concept_pool": 5342
+      },
+      "split_ids_unique": {
+        "train": true,
+        "val": true,
+        "test": true
+      },
+      "cross_split_ids_unique": true,
+      "id_alignment_with_track1": {
+        "train": true,
+        "val": true,
+        "test": true
+      },
+      "test_schema": [
+        "id",
+        "prompt"
+      ],
+      "val_query_index_size": 756,
+      "val_reject_pool_consistency_violations": 0
+    }
+  },
+  "quality": {
+    "raw_splits": {
+      "train": {
+        "count": 2985,
+        "word_count": {
+          "min": 629,
+          "median": 894,
+          "max": 1177
+        },
+        "document_types": {
+          "blog_post": 300,
+          "case_study": 298,
+          "encyclopedia_entry": 298,
+          "forum_discussion": 299,
+          "interview_transcript": 297,
+          "news_article": 297,
+          "op_ed": 303,
+          "policy_brief": 298,
+          "report_excerpt": 297,
+          "research_summary": 298
+        },
+        "label_sizes": {
+          "1": 605,
+          "2": 598,
+          "3": 579,
+          "4": 613,
+          "5": 590
+        }
+      },
+      "val": {
+        "count": 756,
+        "word_count": {
+          "min": 672,
+          "median": 889.5,
+          "max": 1130
+        },
+        "document_types": {
+          "blog_post": 76,
+          "case_study": 76,
+          "encyclopedia_entry": 75,
+          "forum_discussion": 76,
+          "interview_transcript": 77,
+          "news_article": 75,
+          "op_ed": 75,
+          "policy_brief": 76,
+          "report_excerpt": 75,
+          "research_summary": 75
+        },
+        "label_sizes": {
+          "1": 153,
+          "2": 153,
+          "3": 152,
+          "4": 155,
+          "5": 143
+        }
+      },
+      "test": {
+        "count": 1911,
+        "word_count": {
+          "min": 675,
+          "median": 896,
+          "max": 1154
+        },
+        "document_types": {
+          "blog_post": 189,
+          "case_study": 191,
+          "encyclopedia_entry": 190,
+          "forum_discussion": 191,
+          "interview_transcript": 191,
+          "news_article": 189,
+          "op_ed": 190,
+          "policy_brief": 194,
+          "report_excerpt": 193,
+          "research_summary": 193
+        },
+        "label_sizes": {
+          "1": 372,
+          "2": 349,
+          "3": 415,
+          "4": 384,
+          "5": 391
+        }
+      }
+    },
+    "track2_train_prompt_templates": 1,
+    "track2_train_chosen_sizes": {
+      "1": 605,
+      "2": 598,
+      "3": 579,
+      "4": 613,
+      "5": 590
+    },
+    "track2_train_rejected_sizes": {
+      "8": 7,
+      "9": 20,
+      "10": 1302,
+      "11": 340,
+      "12": 1170,
+      "13": 51,
+      "14": 77,
+      "15": 17,
+      "16": 1
+    },
+    "track2_val_rejected_sizes": {
+      "11": 756
+    }
+  }
+}
