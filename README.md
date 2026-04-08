@@ -6,8 +6,8 @@ GitHub repository: [ZeqiangWangAI/elsst-benchmark-baselines](https://github.com/
 
 ELSST is published as two coordinated tracks:
 
-- [Track1 card](/Users/zeqiangwang/Desktop/ELSST/track1/README.md): implicit concept retrieval from a fixed ELSST concept pool
-- [Track2 card](/Users/zeqiangwang/Desktop/ELSST/track2/README.md): open concept discovery as semantic-set generation
+- [Track1 card](track1/README.md): implicit concept retrieval from a fixed ELSST concept pool. Dataset: [JohnWang10086/elsst-track1](https://huggingface.co/datasets/JohnWang10086/elsst-track1)
+- [Track2 card](track2/README.md): open concept discovery as semantic-set generation. Dataset: [JohnWang10086/elsst-track2](https://huggingface.co/datasets/JohnWang10086/elsst-track2)
 
 Treat those two cards as the full benchmark specification. They are the release documents that should be cited together when describing the task.
 
@@ -19,17 +19,15 @@ Treat those two cards as the full benchmark specification. They are the release 
 
 The public test splits remain input-only. No gold labels are exposed in:
 
-- [`track1/test_input.jsonl`](/Users/zeqiangwang/Desktop/ELSST/track1/test_input.jsonl)
-- [`track2/test_input.jsonl`](/Users/zeqiangwang/Desktop/ELSST/track2/test_input.jsonl)
+- [`track1/test_input.jsonl`](track1/test_input.jsonl)
+- [`track2/test_input.jsonl`](track2/test_input.jsonl)
 
 ## Repository Scope
 
 This GitHub repository hosts code, tests, scripts, and track cards. The dataset payloads themselves are intended for two separate Hugging Face dataset repositories:
 
-- `ZeqiangWangAI/elsst-track1`
-- `ZeqiangWangAI/elsst-track2`
-
-At the time of this update, GitHub authentication is available locally, but Hugging Face upload is blocked until a local HF token is configured.
+- [JohnWang10086/elsst-track1](https://huggingface.co/datasets/JohnWang10086/elsst-track1)
+- [JohnWang10086/elsst-track2](https://huggingface.co/datasets/JohnWang10086/elsst-track2)
 
 ## Baseline Entrypoints
 

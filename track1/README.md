@@ -16,7 +16,7 @@ size_categories:
 
 ELSST Track1 evaluates whether a model can read a long synthetic social-science passage and retrieve the most relevant concepts from a fixed ELSST concept pool. The target is not lexical matching. The concepts are intentionally implicit, cross-sentence, and often require discourse-level reasoning over topic, framing, and social context.
 
-This card is the authoritative task description for the retrieval track. The companion generation track is described in [`track2/README.md`](../track2/README.md). The reference code lives in [ZeqiangWangAI/elsst-benchmark-baselines](https://github.com/ZeqiangWangAI/elsst-benchmark-baselines).
+This card is the authoritative task description for the retrieval track. The published dataset lives at [JohnWang10086/elsst-track1](https://huggingface.co/datasets/JohnWang10086/elsst-track1). The companion generation track is published at [JohnWang10086/elsst-track2](https://huggingface.co/datasets/JohnWang10086/elsst-track2). The reference code lives in [ZeqiangWangAI/elsst-benchmark-baselines](https://github.com/ZeqiangWangAI/elsst-benchmark-baselines).
 
 ## Task
 

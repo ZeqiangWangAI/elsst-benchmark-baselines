@@ -6,7 +6,7 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(description="Upload a local ELSST track directory to a Hugging Face dataset repo.")
     parser.add_argument("--source-dir", type=Path, required=True, help="Local directory to upload.")
-    parser.add_argument("--repo-id", required=True, help="Target dataset repo id, e.g. ZeqiangWangAI/elsst-track1.")
+    parser.add_argument("--repo-id", required=True, help="Target dataset repo id, e.g. owner/elsst-track1.")
     parser.add_argument("--private", action="store_true", help="Create the dataset repo as private.")
     parser.add_argument("--token", help="Optional Hugging Face token. If omitted, the local login is used.")
     parser.add_argument("--commit-message", default="Upload ELSST dataset release")

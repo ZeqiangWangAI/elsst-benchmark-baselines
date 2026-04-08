@@ -16,7 +16,7 @@ size_categories:
 
 ELSST Track2 evaluates whether a model can read the same long synthetic passage used in Track1 and generate the latent ELSST concepts as a semantic set. The target is a small concept set, not a free-form explanation. Models must recover implicit concepts that are grounded in the passage but not always directly named.
 
-This card is the authoritative task description for the generation track. The companion retrieval track is described in [`track1/README.md`](../track1/README.md). The reference code lives in [ZeqiangWangAI/elsst-benchmark-baselines](https://github.com/ZeqiangWangAI/elsst-benchmark-baselines).
+This card is the authoritative task description for the generation track. The published dataset lives at [JohnWang10086/elsst-track2](https://huggingface.co/datasets/JohnWang10086/elsst-track2). The companion retrieval track is published at [JohnWang10086/elsst-track1](https://huggingface.co/datasets/JohnWang10086/elsst-track1). The reference code lives in [ZeqiangWangAI/elsst-benchmark-baselines](https://github.com/ZeqiangWangAI/elsst-benchmark-baselines).
 
 ## Task
 
