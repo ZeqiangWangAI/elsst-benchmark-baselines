@@ -73,7 +73,26 @@ The baseline retrieval evaluator reports:
 - `Recall@10`
 - `NDCG@10`
 
-Evaluation is defined over the validation split only. The public test split is input-only.
+The hosted evaluator uses `NDCG@10` as the primary leaderboard metric and also reports `MRR`, `Recall@5`, and `Recall@10`.
+
+Validation scoring is public and immediate. Test scoring is available through the hosted evaluator, but the public test split remains input-only and hidden labels are not released.
+
+## Submission Format
+
+Submit one JSON object per line:
+
+```json
+{"id": "val_v00029", "ranked_ids": ["concept_id_1", "concept_id_2", "..."]}
+```
+
+Rules:
+
+- Include every ID from the selected split exactly once.
+- Do not include extra or duplicate row IDs.
+- `ranked_ids` must be a list of concept IDs from `concept_pool.jsonl`.
+- Do not include duplicate or unknown concept IDs.
+- Provide at least 10 ranked IDs for every row.
+- The evaluator uses at most the first 100 ranked IDs.
 
 ## Data Design And Quality
 

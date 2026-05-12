@@ -292,9 +292,9 @@ def normalize_track2_train_rows(source_root, raw_train_rows, public_id_maps):
     return normalized
 
 
-def build_val_track2_rows(raw_val_rows, prompt_prefix, reject_pool, public_id_maps):
+def build_labeled_track2_rows(raw_rows, prompt_prefix, reject_pool, public_id_maps, split):
     output_rows = []
-    for row in raw_val_rows:
+    for row in raw_rows:
         chosen = [normalize_gold_concept(item) for item in row["labels"]["concepts"]]
         chosen_ids = sorted(item["concept_id"] for item in chosen)
         candidate_pool = [item for item in reject_pool if item["concept_id"] not in set(chosen_ids)]
@@ -310,7 +310,7 @@ def build_val_track2_rows(raw_val_rows, prompt_prefix, reject_pool, public_id_ma
         rejected = rng.sample(candidate_pool, k=min(VAL_REJECTED_K, len(candidate_pool)))
         output_rows.append(
             {
-                "id": public_id_maps["val"][row["sample_id"]],
+                "id": public_id_maps[split][row["sample_id"]],
                 "prompt": f"{prompt_prefix}{row['text']}",
                 "chosen": chosen,
                 "rejected": rejected,
@@ -498,7 +498,9 @@ def export_standard_datasets(source_root, output_root):
     )
     write_jsonl(
         track2_dir / "val.jsonl",
-        build_val_track2_rows(raw_splits["val"], prompt_prefix, reject_pool, public_id_maps),
+        build_labeled_track2_rows(
+            raw_splits["val"], prompt_prefix, reject_pool, public_id_maps, "val"
+        ),
     )
     write_jsonl(
         track2_dir / "test_input.jsonl",

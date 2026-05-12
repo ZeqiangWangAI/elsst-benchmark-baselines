@@ -73,6 +73,34 @@ The reference evaluator reports:
 
 Semantic-set matching uses BERTScore-based alignment with `tau = 0.85` in the baseline code.
 
+The hosted evaluator uses `semantic_f1` as the primary leaderboard metric and also reports exact-match metrics, semantic precision/recall/F1, parse rate, valid prediction rate, and average predicted set size.
+
+Validation scoring is public and immediate. Test scoring is available through the hosted evaluator, but the public test split remains input-only and hidden labels are not released.
+
+## Submission Format
+
+Preferred format, one JSON object per line:
+
+```json
+{"id": "val_v00029", "predicted_terms": ["TERM 1", "TERM 2"]}
+```
+
+Fallback format for raw generated text:
+
+```json
+{"id": "val_v00029", "raw_text": "TERM 1: short definition; TERM 2: short definition;"}
+```
+
+Rules:
+
+- Include every ID from the selected split exactly once.
+- Do not include extra or duplicate row IDs.
+- `predicted_terms` must be a list of strings.
+- `raw_text` is parsed with the same `term: definition;` parser used by the reference code.
+- Empty predictions are allowed and score zero for that row.
+- Terms are whitespace-normalized and deduplicated.
+- The evaluator uses at most the first 5 deduplicated terms.
+
 ## Data Design And Quality
 
 The corpus is fully synthetic and was generated for benchmark construction. No real personal data is included.

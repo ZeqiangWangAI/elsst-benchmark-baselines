@@ -46,6 +46,26 @@ Recommended Track2 training path:
 2. Run `train_dpo` from the SFT adapter.
 3. Evaluate with `python -m elsst_baselines.generation.evaluate --dataset-root track2 ...`.
 
+## Hosted Evaluator
+
+The hosted evaluator is available at [JohnWang10086/elsst-evaluator](https://huggingface.co/spaces/JohnWang10086/elsst-evaluator).
+
+Workflow:
+
+1. Select Track1 or Track2.
+2. Upload validation predictions first. This checks the submission schema and reports validation metrics.
+3. Sign in with Hugging Face.
+4. Upload test predictions for the same track to submit to the leaderboard.
+
+Test submissions require Hugging Face identity through browser login or an authenticated Gradio client request with `Authorization: Bearer $HF_TOKEN`, and are rate-limited to three submissions per user, per track, per 24 hours. Public test files remain input-only; hidden test labels are not included in this repository or in the public Space repository.
+
+Submission formats:
+
+- Track1 retrieval: JSONL rows of `{"id": "...", "ranked_ids": ["concept_id", "..."]}`.
+- Track2 generation: JSONL rows of `{"id": "...", "predicted_terms": ["term", "..."]}`. A `raw_text` fallback is accepted for generated `term: definition;` style output.
+
+See [`docs/evaluator.md`](docs/evaluator.md) for complete submission and deployment details.
+
 ## Verification
 
 Re-export the standardized datasets:
@@ -65,4 +85,5 @@ Run regression tests:
 ```bash
 python3 -m unittest discover -s tests -p 'test_export_standard_datasets.py' -v
 python3 -m unittest discover -s tests -p 'test_baselines_*.py' -v
+python3 -m unittest discover -s tests -p 'test_evaluator.py' -v
 ```
