@@ -286,6 +286,16 @@ class SpaceAppImportTest(unittest.TestCase):
         self.assertEqual(username, "alice")
         fake_api.assert_called_once_with(token="hf_fake")
 
+    def test_validation_state_persists_across_oauth_redirect(self):
+        spec = importlib.util.spec_from_file_location("elsst_space_app", REPO_ROOT / "app.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        state = module._validation_state()
+
+        self.assertEqual(state.storage_key, "elsst-validation-state")
+        self.assertEqual(state.default_value, {"validated": False, "track": "track1"})
+
 
 if __name__ == "__main__":
     unittest.main()

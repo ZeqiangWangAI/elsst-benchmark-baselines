@@ -37,6 +37,13 @@ def _leaderboard_store():
     return LeaderboardStore(_leaderboard_db_path())
 
 
+def _validation_state():
+    return gr.BrowserState(
+        default_value={"validated": False, "track": "track1"},
+        storage_key="elsst-validation-state",
+    )
+
+
 def _uploaded_path(uploaded_file):
     if uploaded_file is None:
         raise gr.Error("Upload a JSONL submission file.")
@@ -209,7 +216,7 @@ def build_demo():
             "submitting hidden-test results to the leaderboard."
         )
         gr.LoginButton()
-        val_state = gr.State({"validated": False, "track": "track1"})
+        val_state = _validation_state()
 
         with gr.Row():
             track_selector = gr.Radio(

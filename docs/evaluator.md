@@ -27,10 +27,19 @@ token = os.environ["HF_TOKEN"]
 headers = {"Authorization": f"Bearer {token}"}
 client = Client("https://johnwang10086-elsst-evaluator.hf.space", headers=headers)
 
+val_result = client.predict(
+    "track1",
+    handle_file("track1_val_submission.jsonl"),
+    api_name="/_score_val_ui",
+    headers=headers,
+)
+val_state = val_result[1]
+
 client.predict(
     "track1",
     "my-model-or-team",
     handle_file("track1_test_submission.jsonl"),
+    val_state,
     api_name="/_submit_test_ui",
     headers=headers,
 )
