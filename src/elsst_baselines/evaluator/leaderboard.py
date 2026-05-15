@@ -93,19 +93,20 @@ class LeaderboardStore:
 
         with self._lock():
             with closing(self._connect()) as connection:
-                count = connection.execute(
-                    """
-                    SELECT COUNT(*) AS count
-                    FROM submissions
-                    WHERE username = ? AND track = ? AND created_at >= ?
-                    """,
-                    (username, track, cutoff_at),
-                ).fetchone()["count"]
-                if count >= self.daily_limit:
-                    raise RateLimitError(
-                        f"rate limit exceeded for {username} on {track}: "
-                        f"{self.daily_limit} submissions per 24 hours"
-                    )
+                if self.daily_limit is not None:
+                    count = connection.execute(
+                        """
+                        SELECT COUNT(*) AS count
+                        FROM submissions
+                        WHERE username = ? AND track = ? AND created_at >= ?
+                        """,
+                        (username, track, cutoff_at),
+                    ).fetchone()["count"]
+                    if count >= self.daily_limit:
+                        raise RateLimitError(
+                            f"rate limit exceeded for {username} on {track}: "
+                            f"{self.daily_limit} submissions per 24 hours"
+                        )
 
                 connection.execute(
                     """

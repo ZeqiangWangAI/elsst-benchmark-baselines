@@ -71,6 +71,37 @@ class Track1EvaluatorTest(unittest.TestCase):
         self.assertGreater(result.metrics["NDCG@10"], 0.8)
         self.assertEqual(result.diagnostics["row_count"], 2)
 
+    def test_scores_gold_ranking_submission_at_full_metrics(self):
+        from elsst_baselines.evaluator import track1
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "gold.jsonl"
+            write_jsonl(
+                path,
+                [
+                    {
+                        "id": "val_a",
+                        "ranked_ids": ["c1", "c4", "c5", "c6", "c7", "c8", "c9", "c10", "c11", "c12"],
+                    },
+                    {
+                        "id": "val_b",
+                        "ranked_ids": ["c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c10", "c11"],
+                    },
+                ],
+            )
+
+            result = track1.score_submission(
+                submission_path=path,
+                reference_rows=self.reference_rows,
+                concept_pool=self.concept_pool,
+                split="val",
+            )
+
+        self.assertAlmostEqual(result.metrics["MRR"], 1.0)
+        self.assertAlmostEqual(result.metrics["Recall@5"], 1.0)
+        self.assertAlmostEqual(result.metrics["Recall@10"], 1.0)
+        self.assertAlmostEqual(result.metrics["NDCG@10"], 1.0)
+
     def test_rejects_missing_extra_duplicate_and_unknown_concepts(self):
         from elsst_baselines.evaluator import track1
         from elsst_baselines.evaluator.validation import SubmissionValidationError
@@ -174,6 +205,33 @@ class Track2EvaluatorTest(unittest.TestCase):
         self.assertAlmostEqual(result.metrics["parse_rate"], 1.0)
         self.assertAlmostEqual(result.metrics["valid_prediction_rate"], 1.0)
 
+    def test_exact_gold_terms_do_not_require_similarity_model(self):
+        from elsst_baselines.evaluator import track2
+
+        def fail_if_called(predicted_terms, gold_terms):
+            raise AssertionError("exact gold predictions should not call similarity model")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "submission.jsonl"
+            write_jsonl(
+                path,
+                [
+                    {"id": "val_a", "predicted_terms": ["Inequality", "Social capital"]},
+                    {"id": "val_b", "predicted_terms": ["Stigma"]},
+                ],
+            )
+
+            result = track2.score_submission(
+                submission_path=path,
+                reference_rows=self.reference_rows,
+                split="val",
+                similarity_fn=fail_if_called,
+                tau=0.85,
+            )
+
+        self.assertAlmostEqual(result.metrics["exact_f1"], 1.0)
+        self.assertAlmostEqual(result.metrics["semantic_f1"], 1.0)
+
     def test_raw_text_fallback_and_empty_predictions_score_zero(self):
         from elsst_baselines.evaluator import track2
 
@@ -259,6 +317,30 @@ class LeaderboardStoreTest(unittest.TestCase):
         self.assertEqual([entry["model_name"] for entry in entries], ["m1", "m2"])
         self.assertEqual([entry["submission_hash"] for entry in entries], ["hash2", "hash3"])
 
+    def test_can_disable_rate_limits_for_public_anonymous_submissions(self):
+        from elsst_baselines.evaluator.leaderboard import LeaderboardStore
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            store = LeaderboardStore(Path(tmpdir) / "leaderboard.sqlite", daily_limit=None)
+            now = datetime(2026, 5, 9, 12, tzinfo=timezone.utc)
+            for index in range(5):
+                store.record_submission(
+                    "anonymous",
+                    "track1",
+                    "m0" if index < 2 else f"m{index}",
+                    "NDCG@10",
+                    {"NDCG@10": index / 10},
+                    f"hash{index}",
+                    now=now + timedelta(minutes=index),
+                )
+
+            entries = store.top_entries(track="track1")
+
+        self.assertEqual(len(entries), 4)
+        self.assertEqual(entries[0]["username"], "anonymous")
+        self.assertEqual(entries[0]["model_name"], "m4")
+        self.assertEqual([entry for entry in entries if entry["model_name"] == "m0"][0]["submission_hash"], "hash1")
+
 
 class SpaceAppImportTest(unittest.TestCase):
     def test_app_module_imports_without_launching(self):
@@ -269,32 +351,60 @@ class SpaceAppImportTest(unittest.TestCase):
         self.assertTrue(callable(module.build_demo))
         self.assertTrue(callable(module.score_val_file))
 
-    def test_hf_username_falls_back_to_bearer_token_identity(self):
-        spec = importlib.util.spec_from_file_location("elsst_space_app", REPO_ROOT / "app.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-
-        class FakeRequest:
-            username = None
-            oauth_profile = None
-            headers = {"authorization": "Bearer hf_fake"}
-
-        with patch("huggingface_hub.HfApi") as fake_api:
-            fake_api.return_value.whoami.return_value = {"name": "alice"}
-            username = module._hf_username(FakeRequest())
-
-        self.assertEqual(username, "alice")
-        fake_api.assert_called_once_with(token="hf_fake")
-
-    def test_validation_state_persists_across_oauth_redirect(self):
+    def test_validation_state_is_session_local(self):
         spec = importlib.util.spec_from_file_location("elsst_space_app", REPO_ROOT / "app.py")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
         state = module._validation_state()
 
-        self.assertEqual(state.storage_key, "elsst-validation-state")
-        self.assertEqual(state.default_value, {"validated": False, "track": "track1"})
+        self.assertFalse(hasattr(state, "storage_key"))
+        self.assertEqual(state.value, {"validated": False, "track": "track1"})
+
+    def test_anonymous_test_submit_succeeds_without_request(self):
+        spec = importlib.util.spec_from_file_location("elsst_space_app", REPO_ROOT / "app.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        from elsst_baselines.evaluator.leaderboard import LeaderboardStore
+        from elsst_baselines.evaluator.result import EvaluationResult
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            submission = Path(tmpdir) / "submission.jsonl"
+            submission.write_text("{}\n", encoding="utf-8")
+            store = LeaderboardStore(Path(tmpdir) / "leaderboard.sqlite", daily_limit=None)
+
+            with patch.object(module, "_leaderboard_store", return_value=store), patch.object(
+                module,
+                "_evaluate",
+                return_value=EvaluationResult(
+                    track="track1",
+                    split="test",
+                    primary_metric="NDCG@10",
+                    metrics={"NDCG@10": 1.0},
+                    diagnostics={"row_count": 1},
+                ),
+            ):
+                result_markdown, rows = module._submit_test_ui(
+                    "track1",
+                    "anonymous-model",
+                    str(submission),
+                    {"validated": True, "track": "track1"},
+                )
+
+        self.assertIn("Track1 Retrieval test score", result_markdown)
+        self.assertEqual(rows[0][1], "anonymous")
+        self.assertEqual(rows[0][2], "anonymous-model")
+
+    def test_anonymous_test_submit_still_requires_val_gate(self):
+        spec = importlib.util.spec_from_file_location("elsst_space_app", REPO_ROOT / "app.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        with self.assertRaises(Exception) as ctx:
+            module._submit_test_ui("track1", "model", "missing.jsonl", {"validated": False, "track": "track1"})
+
+        self.assertIn("Validate the selected track on val", str(ctx.exception))
 
 
 if __name__ == "__main__":

@@ -68,6 +68,17 @@ def _default_similarity(predicted_terms, gold_terms):
     return bert_score_similarity_matrix(predicted_terms, gold_terms)
 
 
+def _exact_set_similarity_matrix(predicted_terms, gold_terms):
+    predicted_normalized = [_normalize_term(term) for term in predicted_terms]
+    gold_normalized = [_normalize_term(term) for term in gold_terms]
+    if sorted(predicted_normalized) != sorted(gold_normalized):
+        return None
+    return [
+        [1.0 if predicted == gold else 0.0 for gold in gold_normalized]
+        for predicted in predicted_normalized
+    ]
+
+
 def _mean(items, key, count):
     return sum(item[key] for item in items) / count if count else 0.0
 
@@ -137,7 +148,9 @@ def score_submission(
         gold_terms = [item["term"] for item in reference_row["chosen"]]
         exact_metrics.append(exact_term_metrics(predicted_terms, gold_terms))
         if predicted_terms and gold_terms:
-            matrix = similarity_fn(predicted_terms, gold_terms)
+            matrix = _exact_set_similarity_matrix(predicted_terms, gold_terms)
+            if matrix is None:
+                matrix = similarity_fn(predicted_terms, gold_terms)
         else:
             matrix = []
         semantic_metrics.append(

@@ -54,10 +54,9 @@ Workflow:
 
 1. Select Track1 or Track2.
 2. Upload validation predictions first. This checks the submission schema and reports validation metrics.
-3. Sign in with Hugging Face.
-4. Upload test predictions for the same track to submit to the leaderboard.
+3. Upload test predictions for the same track to submit anonymously to the leaderboard.
 
-Test submissions require Hugging Face identity through browser login or an authenticated Gradio client request with `Authorization: Bearer $HF_TOKEN`, and are rate-limited to three submissions per user, per track, per 24 hours. Public test files remain input-only; hidden test labels are not included in this repository or in the public Space repository.
+Test submissions are public and anonymous. Public test files remain input-only; hidden test labels are not included in this repository or in the public Space repository.
 
 Submission formats:
 

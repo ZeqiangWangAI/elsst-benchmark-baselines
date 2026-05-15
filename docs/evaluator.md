@@ -12,26 +12,21 @@ Use the Space to validate submission format on the public validation split befor
 1. Select `track1` or `track2`.
 2. Upload a validation JSONL file.
 3. Check the returned metrics and diagnostics.
-4. Sign in with Hugging Face.
-5. Upload the matching test JSONL file.
+4. Upload the matching test JSONL file.
 
-Test submissions are rate-limited to three submissions per Hugging Face user, per track, per 24 hours. Public test files remain input-only; hidden test labels are not released.
+Test submissions are public and anonymous. Public test files remain input-only; hidden test labels are not released.
 
-Programmatic submissions should pass an authenticated Hugging Face token as an `Authorization` header. The evaluator resolves the token with Hugging Face `whoami` and applies the same per-user rate limit.
+Programmatic submissions use the same validation-before-test flow. The test row is recorded under the anonymous leaderboard user, with `model/team` used to distinguish entries.
 
 ```python
-import os
 from gradio_client import Client, handle_file
 
-token = os.environ["HF_TOKEN"]
-headers = {"Authorization": f"Bearer {token}"}
-client = Client("https://johnwang10086-elsst-evaluator.hf.space", headers=headers)
+client = Client("https://johnwang10086-elsst-evaluator.hf.space")
 
 val_result = client.predict(
     "track1",
     handle_file("track1_val_submission.jsonl"),
     api_name="/_score_val_ui",
-    headers=headers,
 )
 val_state = val_result[1]
 
@@ -41,7 +36,6 @@ client.predict(
     handle_file("track1_test_submission.jsonl"),
     val_state,
     api_name="/_submit_test_ui",
-    headers=headers,
 )
 ```
 

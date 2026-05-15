@@ -34,14 +34,11 @@ def _leaderboard_db_path():
 
 
 def _leaderboard_store():
-    return LeaderboardStore(_leaderboard_db_path())
+    return LeaderboardStore(_leaderboard_db_path(), daily_limit=None)
 
 
 def _validation_state():
-    return gr.BrowserState(
-        default_value={"validated": False, "track": "track1"},
-        storage_key="elsst-validation-state",
-    )
+    return gr.State({"validated": False, "track": "track1"})
 
 
 def _uploaded_path(uploaded_file):
@@ -114,34 +111,6 @@ def _format_validation_error(exc):
     return f"### Validation failed\n\n{rows}"
 
 
-def _hf_username(request):
-    if request is None:
-        return None
-    username = getattr(request, "username", None)
-    if username:
-        return username
-    profile = getattr(request, "oauth_profile", None)
-    if isinstance(profile, dict):
-        return profile.get("preferred_username") or profile.get("name")
-    headers = getattr(request, "headers", None)
-    if headers is not None:
-        username = headers.get("x-hf-username") or headers.get("X-HF-Username")
-        if username:
-            return username
-        authorization = headers.get("authorization") or headers.get("Authorization")
-        if isinstance(authorization, str) and authorization.lower().startswith("bearer "):
-            token = authorization.split(" ", 1)[1].strip()
-            if token:
-                try:
-                    from huggingface_hub import HfApi
-
-                    payload = HfApi(token=token).whoami()
-                    return payload.get("name")
-                except Exception:
-                    return None
-    return None
-
-
 def score_val_file(track, submission_file):
     result = _evaluate(track, "val", submission_file)
     return _format_result(result)
@@ -175,9 +144,7 @@ def _leaderboard_rows(track):
     return rows
 
 
-def submit_test_file(track, model_name, submission_file, username):
-    if not username:
-        raise gr.Error("HF login is required for test submissions.")
+def submit_test_file(track, model_name, submission_file, username="anonymous"):
     result = _evaluate(track, "test", submission_file)
     submission_hash = _submission_hash(_uploaded_path(submission_file))
     _leaderboard_store().record_submission(
@@ -191,14 +158,11 @@ def submit_test_file(track, model_name, submission_file, username):
     return _format_result(result)
 
 
-def _submit_test_ui(track, model_name, submission_file, val_state, request: gr.Request):
+def _submit_test_ui(track, model_name, submission_file, val_state):
     if not val_state or not val_state.get("validated") or val_state.get("track") != track:
         raise gr.Error("Validate the selected track on val before submitting test results.")
-    username = _hf_username(request)
-    if not username:
-        raise gr.Error("HF login is required for test submissions.")
     try:
-        result_markdown = submit_test_file(track, model_name, submission_file, username)
+        result_markdown = submit_test_file(track, model_name, submission_file)
     except SubmissionValidationError as exc:
         return _format_validation_error(exc), _leaderboard_rows(track)
     except RateLimitError as exc:
@@ -212,10 +176,9 @@ def build_demo():
     with gr.Blocks(title="ELSST Evaluator") as demo:
         gr.Markdown("# ELSST Evaluator")
         gr.Markdown(
-            "Score validation submissions anonymously. Sign in with Hugging Face before "
-            "submitting hidden-test results to the leaderboard."
+            "Score validation submissions first, then submit hidden-test results "
+            "anonymously to the leaderboard."
         )
-        gr.LoginButton()
         val_state = _validation_state()
 
         with gr.Row():
